@@ -109,6 +109,7 @@ export default class Map extends MapEvented<LeafletElement, Props> {
 
   _ready: boolean = false
   _updating: boolean = false
+  _viewportChangedTimer: undefined
 
   constructor(props: Props) {
     super(props)
@@ -292,8 +293,13 @@ export default class Map extends MapEvented<LeafletElement, Props> {
   }
 
   onViewportChanged = () => {
+    // leaflet is generating multiple moveend events on map autoPan so debounce them
+    if ( this._viewportChangedTimer ) window.clearTimeout(this._viewportChangedTimer);
+
     if (this.props.onViewportChanged && !this._updating) {
-      this.props.onViewportChanged(this.viewport)
+      this._viewportChangedTimer = window.setTimeout(function() {
+        this.props.onViewportChanged(this.viewport);
+      }, 20);
     }
   }
 
